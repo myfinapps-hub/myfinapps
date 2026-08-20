@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyFIN - Finance Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+    
+    <style>
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'DM Sans', sans-serif !important; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 20px 110px 20px;
+            color: #1e293b;
+            background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 40%, #1e3a8a 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* CSS BACKGROUND WAVES / MOTIF RECREATING REFERENCE */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: 
+                radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 10% 80%, rgba(30, 64, 175, 0.5) 0%, transparent 50%),
+                linear-gradient(135deg, rgba(29, 78, 216, 0.4) 0%, rgba(30, 58, 138, 0.8) 100%);
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -50px; left: 0; width: 100vw; height: 300px;
+            background: rgba(37, 99, 235, 0.25);
+            border-bottom-left-radius: 50% 30px;
+            border-bottom-right-radius: 50% 30px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container { width: 100%; max-width: 400px; z-index: 1; }
+
+        /* AUTH SCREEN */
+        .auth-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 360px;
+            border-radius: 20px;
+            padding: 24px 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .auth-card h2 { font-size: 20px; color: #0f172a; margin-bottom: 6px; font-weight: 700; }
+        .auth-card p { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+
+        .auth-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            outline: none;
+            background: #f8fafc;
+        }
+        .auth-input:focus { border-color: #0284c7; background: #fff; }
+
+        /* KEYPAD ENGINE */
+        .keypad-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 6px; 
+            margin-top: 10px; 
+        }
+        .key-btn {
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            padding: 10px; 
+            border-radius: 8px;
+            font-size: 15px; 
+            font-weight: 600; 
+            color: #1e293b; 
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .key-btn:active { background: #e2e8f0; }
+        .key-btn.submit { background: #0284c7; color: white; border-color: #0284c7; grid-column: span 3; font-size: 13px; padding: 11px; }
+        .key-btn.del { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+
+        /* PROFILE HEADER */
+        .profile-card {
+            background: #ffffff;
+            padding: 14px 18px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .avatar { 
+            width: 42px; height: 42px; 
+            background: #0284c7; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 14px;
+            flex-shrink: 0;
+        }
+        .profile-info h2 { font-size: 15px; font-weight: 700; color: #0f172a; }
+        .profile-info p { font-size: 12px; color: #64748b; }
+
+        /* BALANCE CARD */
+        .balance-card-ref {
+            background: #ffffff;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        .balance-top-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%);
+            padding: 12px 18px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .balance-top-gradient span { font-size: 12px; font-weight: 600; letter-spacing: 0.5px; }
+
+        .balance-bottom-content { padding: 14px 18px; background: #ffffff; }
+        .balance-label-ref { font-size: 12px; color: #64748b; font-weight: 500; margin-bottom: 2px; }
+        .balance-row-ref { display: flex; justify-content: space-between; align-items: center; }
+        .balance-value-ref { font-size: 22px; font-weight: 700; color: #1e293b; }
+        
+        /* EYE ICON */
+        .toggle-eye-btn {
+            background: transparent; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            padding: 4px; color: #0284c7; transition: color 0.2s;
+        }
+        .toggle-eye-btn:hover { color: #0369a1; }
+        .toggle-eye-btn svg { width: 20px; height: 20px; fill: currentColor; }
+        .eye-slash-line { display: none; }
+        .toggle-eye-btn.is-hidden .eye-open-path { display: none; }
+        .toggle-eye-btn.is-hidden .eye-slash-line { display: block; }
+
+        .balance-divider-ref { width: 100%; height: 1px; background: #f1f5f9; margin: 10px 0; }
+
+        .mutasi-btn-ref {
+            background: transparent; border: none; color: #0284c7;
+            font-size: 13px; font-weight: 600; display: flex; align-items: center;
+            gap: 6px; cursor: pointer; padding: 0;
+        }
+        .mutasi-btn-ref svg { width: 16px; height: 16px; fill: currentColor; }
+        .mutasi-btn-ref:hover { text-decoration: underline; }
+
+        /* MAIN MENU */
+        .menu-container-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .menu-section-header { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 14px; }
+
+        .actions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .action-item {
+            background: #f8fafc; padding: 14px 8px; border-radius: 12px;
+            text-align: center; cursor: pointer; border: 1px solid #e2e8f0;
+            display: flex; flex-direction: column; align-items: center;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .action-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .action-item:active { background: #e2e8f0; }
+        
+        .feature-icon-box {
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 8px;
+        }
+        .feature-icon-box svg { width: 20px; height: 20px; fill: currentColor; }
+        
+        .icon-blue-yellow-1 { background: #e0f2fe; color: #d97706; }
+        .icon-blue-yellow-2 { background: #fef3c7; color: #0284c7; }
+        .icon-blue-yellow-3 { background: #1e3a8a; color: #f59e0b; }
+        .icon-blue-yellow-4 { background: #fef08a; color: #1e40af; }
+
+        .action-item p { font-size: 12px; font-weight: 600; color: #334155; }
+
+        /* QUOTES WRAPPER */
+        .quotes-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+        .quote-card {
+            background: #ffffff;
+            padding: 18px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            text-align: center;
+            min-height: 85px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .quote-card.fade-out { opacity: 0; }
+        .quote-card p { 
+            font-size: 11px; 
+            color: #1e293b; 
+            font-weight: 500; 
+            line-height: 1.35; 
+            margin-bottom: 4px;
+            word-break: normal;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+        .quote-card span { font-size: 10px; color: #0284c7; font-weight: 700; }
+
+        /* SECTIONS / PAGES */
+        .content-section {
+            background: #ffffff; 
+            padding: 18px; 
+            border-radius: 16px;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .content-section.active { display: block; }
+        .content-section h3 { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: #0f172a; }
+
+        /* REPORT FILTER AND SEARCH CONTROLS */
+        .report-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 13px;
+            outline: none;
+            background: #f8fafc;
+        }
+        .search-input:focus { border-color: #0284c7; background: #fff; }
+        
+        .filter-chips {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+        .filter-chip {
+            padding: 6px 12px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+        .filter-chip.active {
+            background: #0284c7;
+            color: white;
+            border-color: #0284c7;
+        }
+
+        /* SAVINGS */
+        .savings-card {
+            background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;
+            padding: 18px; border-radius: 12px; margin-bottom: 14px; text-align: center;
+        }
+        .savings-card h2 { font-size: 22px; margin: 6px 0; font-weight: 700; color: #0284c7; }
+        .btn-withdraw {
+            background: #0284c7; color: white; border: none;
+            padding: 7px 14px; border-radius: 8px; font-size: 11px;
+            font-weight: 600; cursor: pointer;
+        }
+
+        .savings-btn-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+        .btn-add-savings { width: 85%; max-width: 280px; }
+
+        /* TRANSACTIONS LIST - RESTRICTED UP TO NAVBAR */
+        .transaction-list { 
+            max-height: calc(100vh - 290px); 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            padding-right: 2px;
+        }
+        .transaction-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; background: #f8fafc; border-radius: 10px; font-size: 12px;
+            border: 1px solid #e2e8f0; cursor: pointer; transition: background 0.15s;
+        }
+        .transaction-item:hover { background: #f1f5f9; }
+        .transaction-item .desc { font-weight: 600; color: #1e293b; }
+        .transaction-item .date-time { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+        .transaction-item .amount.income { color: #0284c7; font-weight: 700; }
+        .transaction-item .amount.expense { color: #d97706; font-weight: 700; }
+        .transaction-item .amount.saving { color: #0369a1; font-weight: 700; }
+
+        /* INCOME OPTIONS - FIXED TEXT & PADDING BUG */
+        .options-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 6px; 
+            margin-bottom: 10px; 
+        }
+        .opt-btn {
+            padding: 10px 6px; 
+            background: #f8fafc; 
+            border: 1px solid #cbd5e1;
+            border-radius: 8px; 
+            font-size: 11px; 
+            font-weight: 600; 
+            color: #334155; 
+            cursor: pointer; 
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            word-break: break-word;
+        }
+        .opt-btn.selected { background: #0284c7; color: white; border-color: #0284c7; }
+
+        /* PROFILE */
+        .profile-field { margin-bottom: 12px; }
+        .profile-field label { display: block; font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+        .profile-field .val { font-size: 13px; color: #1e293b; font-weight: 600; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        
+        .profile-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0284c7;
+            margin-top: 16px;
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #e0f2fe;
+        }
+
+        /* LANGUAGE SWITCHER BUTTONS */
+        .lang-switch-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .lang-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .lang-btn:hover { background: #f1f5f9; }
+        .lang-btn.active {
+            background: #e0f2fe;
+            border-color: #0284c7;
+            color: #0284c7;
+        }
+        .flag-icon {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 400px; background: #ffffff;
+            padding: 10px 20px; display: flex; justify-content: space-around;
+            border-top: 1px solid #e2e8f0;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 1000;
+        }
+        .nav-item {
+            text-decoration: none; color: #94a3b8; font-weight: 500; font-size: 11px;
+            display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
+            transition: color 0.15s;
+        }
+        .nav-item svg { width: 20px; height: 20px; fill: currentColor; }
+        .nav-item.active { color: #0284c7; font-weight: 700; }
+
+        /* MODAL OVERLAYS */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); display: none;
+            justify-content: center; align-items: flex-end; z-index: 2000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: white; width: 100%; max-width: 400px;
+            border-top-left-radius: 20px; border-top-right-radius: 20px;
+            padding: 14px 16px 20px 16px; text-align: center; animation: slideUp 0.2s ease-out;
+            max-height: 85vh; overflow-y: auto;
+        }
+        .modal-card h3 { font-size: 14px; margin-bottom: 8px; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* RECEIPT MODAL STYLES */
+        .receipt-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px 16px;
+            text-align: center;
+        }
+        .receipt-header { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .receipt-status {
+            font-size: 11px; color: #0369a1; background: #e0f2fe;
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-weight: 600; margin-bottom: 16px;
+        }
+        .receipt-amount { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 16px; }
+        .receipt-details {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+            padding: 12px; margin-bottom: 16px; text-align: left;
+        }
+        .receipt-row {
+            display: flex; justify-content: space-between; font-size: 12px;
+            margin-bottom: 8px; color: #64748b;
+        }
+        .receipt-row:last-child { margin-bottom: 0; }
+        .receipt-row span.val { color: #0f172a; font-weight: 600; text-align: right; }
+
+        /* CUSTOM POPUP ALERT MODAL */
+        .custom-popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); display: none;
+            justify-content: center; align-items: center; z-index: 3000;
+        }
+        .custom-popup-overlay.active { display: flex; }
+        .custom-popup-card {
+            background: white; width: 85%; max-width: 320px;
+            border-radius: 16px; padding: 20px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .custom-popup-card p { font-size: 13px; color: #1e293b; margin-bottom: 16px; font-weight: 500; line-height: 1.4; }
+        .custom-popup-btn {
+            background: #0284c7; color: white; border: none; width: 100%;
+            padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer;
+        }
+        .custom-popup-btn:active { background: #0369a1; }
+
+        .error-msg { color: #dc2626; font-size: 11px; margin-top: 4px; display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- AUTH SCREEN -->
+    <div class="auth-screen" id="auth-screen">
+        <div class="auth-card" id="form-register" style="display: none;">
+            <h2 id="reg-title">Register MyFIN</h2>
+            <p id="reg-desc">This app will be linked permanently to your device. Create a new account to get started.</p>
+            <input type="text" id="reg-name" class="auth-input" placeholder="Full Name">
+            <input type="email" id="reg-email" class="auth-input" placeholder="Email Address">
+            <input type="password" id="reg-pin" class="auth-input" placeholder="Create PIN (6 Digits)" readonly maxlength="6" style="text-align: center; letter-spacing: 2px;">
+            <div class="error-msg" id="reg-error"></div>
+            
+            <div class="keypad-grid" id="reg-keypad"></div>
+        </div>
+
+        <div class="auth-card" id="form-login">
+            <h2 id="login-title">Log In to MyFIN</h2>
+            <p id="login-welcome">Welcome back!</p>
+            <input type="password" id="login-pin" class="auth-input" placeholder="Enter Security PIN" readonly maxlength="6" style="text-align: center; letter-spacing: 2px;">
+            <div class="error-msg" id="login-error"></div>
+
+            <div class="keypad-grid" id="login-keypad"></div>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="container">
+        <!-- PROFILE HEADER -->
+        <div class="profile-card">
+            <div class="avatar" id="header-avatar">US</div>
+            <div class="profile-info">
+                <h2 id="header-name">Hi, User</h2>
+                <p id="header-subtitle">My Financial</p>
+            </div>
+        </div>
+
+        <!-- BALANCE CARD -->
+        <div class="balance-card-ref" id="main-balance-card">
+            <div class="balance-top-gradient">
+                <span>MyFIN</span>
+                <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor; opacity: 0.85;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.02-.42 1.95-1.07 2.75z"/></svg>
+            </div>
+            
+            <div class="balance-bottom-content">
+                <div class="balance-label-ref" id="lbl-your-balance">Your Balance</div>
+                <div class="balance-row-ref">
+                    <div class="balance-value-ref" id="main-balance">IDR 0.00</div>
+                    <button class="toggle-eye-btn" id="toggle-eye-btn" onclick="toggleHideSaldo()" aria-label="Toggle Balance">
+                        <svg viewBox="0 0 24 24">
+                            <path class="eye-open-path" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            <path class="eye-slash-line" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="balance-divider-ref"></div>
+                <button class="mutasi-btn-ref" onclick="switchTab('report')">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                    <span id="btn-tx-history">Transaction History</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- HOME PAGE -->
+        <div id="view-home" class="content-section active" style="background: transparent; box-shadow: none; border: none; padding: 0;">
+            
+            <!-- MAIN MENU -->
+            <div class="menu-container-card">
+                <div class="menu-section-header" id="hdr-main-menu">Main Menu</div>
+                
+                <div class="actions-grid">
+                    <div class="action-item" onclick="openTxModal('Income')">
+                        <div class="feature-icon-box icon-blue-yellow-1">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-4H8l4-4 4 4h-3v4z"/></svg>
+                        </div>
+                        <p id="menu-income">Income</p>
+                    </div>
+                    <div class="action-item" onclick="openTxModal('Expense')">
+                        <div class="feature-icon-box icon-blue-yellow-2">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 4h-2v4H8l4 4 4-4h-3V6z"/></svg>
+                        </div>
+                        <p id="menu-expense">Expense</p>
+                    </div>
+                    <div class="action-item" onclick="switchTab('savings')">
+                        <div class="feature-icon-box icon-blue-yellow-3">
+                            <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                        </div>
+                        <p id="menu-savings">Savings</p>
+                    </div>
+                    <div class="action-item" onclick="switchTab('report')">
+                        <div class="feature-icon-box icon-blue-yellow-4">
+                            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                        </div>
+                        <p id="menu-history">History</p>
+                    </div>
+                    <div class="action-item" onclick="showCustomAlert(t('alert_charts'))">
+                        <div class="feature-icon-box icon-blue-yellow-1">
+                            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                        </div>
+                        <p id="menu-charts">Charts</p>
+                    </div>
+                    <div class="action-item" onclick="showCustomAlert(t('alert_invest'))">
+                        <div class="feature-icon-box icon-blue-yellow-2">
+                            <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                        </div>
+                        <p id="menu-investment">Investment</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUTOMATIC QUOTES -->
+            <div class="quotes-wrapper">
+                <div class="quote-card" id="quote-card">
+                    <p id="quote-text"></p>
+                    <span id="quote-author"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAVINGS PAGE -->
+        <div id="view-savings" class="content-section">
+            <h3 id="hdr-savings-account">Savings Account</h3>
+            <div class="savings-card">
+                <p id="lbl-total-savings" style="font-size: 11px; font-weight:600; text-transform:uppercase; color:#0369a1;">Total Savings Balance</p>
+                <h2 id="savings-balance">IDR 0.00</h2>
+                <button class="btn-withdraw" id="btn-withdraw-main" onclick="openTxModal('Withdraw Savings')">Withdraw to Main Balance</button>
+            </div>
+
+            <div class="savings-btn-container">
+                <button class="key-btn submit btn-add-savings" id="btn-add-deposit" onclick="openTxModal('Deposit Savings')">+ Add New Deposit</button>
+            </div>
+
+            <h3 id="hdr-savings-history">Savings History</h3>
+            <div class="transaction-list" id="savings-list"></div>
+        </div>
+
+        <!-- REPORT PAGE -->
+        <div id="view-report" class="content-section">
+            <h3 id="hdr-tx-history">Transaction History</h3>
+            
+            <!-- SEARCH AND FILTERS -->
+            <div class="report-controls">
+                <input type="text" id="report-search" class="search-input" placeholder="Search transactions..." oninput="renderTransactions()">
+                <div class="filter-chips">
+                    <div class="filter-chip active" id="chip-all" onclick="setReportFilter('all', this)">All</div>
+                    <div class="filter-chip" id="chip-income" onclick="setReportFilter('income', this)">Income</div>
+                    <div class="filter-chip" id="chip-expense" onclick="setReportFilter('expense', this)">Expense</div>
+                    <div class="filter-chip" id="chip-saving" onclick="setReportFilter('saving', this)">Savings</div>
+                </div>
+            </div>
+
+            <div class="transaction-list" id="transaction-list"></div>
+        </div>
+
+        <!-- PROFILE PAGE -->
+        <div id="view-profile" class="content-section">
+            <h3 id="hdr-profile-settings">Profile Settings</h3>
+            
+            <!-- SECTION 1: USER INFO -->
+            <div class="profile-section-title" id="sec-user-info">User Account Info</div>
+            <div class="profile-field">
+                <label id="lbl-acc-name">Account Name</label>
+                <div class="val" id="profile-name">-</div>
+            </div>
+            <div class="profile-field">
+                <label id="lbl-email">Email</label>
+                <div class="val" id="profile-email">-</div>
+            </div>
+            <div class="profile-field">
+                <label id="lbl-pin">Security PIN</label>
+                <div class="val">
+                    <span id="profile-pin-display">••••••</span>
+                    <button class="toggle-eye-btn" id="toggle-profile-pin-btn" onclick="toggleProfilePin()" aria-label="Toggle PIN">
+                        <svg viewBox="0 0 24 24">
+                            <path class="eye-open-path" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            <path class="eye-slash-line" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECTION 2: LANGUAGE SETTINGS -->
+            <div class="profile-section-title" id="sec-language">Language / Bahasa</div>
+            <div class="lang-switch-grid">
+                <button class="lang-btn" id="lang-btn-en" onclick="setLanguage('en')">
+                    <span class="flag-icon">🇺🇸</span> English
+                </button>
+                <button class="lang-btn" id="lang-btn-id" onclick="setLanguage('id')">
+                    <span class="flag-icon">🇮🇩</span> Indonesia
+                </button>
+            </div>
+
+            <!-- SECTION 3: ADMIN / DEVELOPER INFO -->
+            <div class="profile-section-title" id="sec-dev-info">Developer / Admin Info</div>
+            <div class="profile-field">
+                <label id="lbl-creator">App Creator</label>
+                <div class="val">Dani Rizwan</div>
+            </div>
+            <div class="profile-field">
+                <label>Instagram</label>
+                <div class="val">@danirzwann</div>
+            </div>
+            <div class="profile-field">
+                <label>WhatsApp</label>
+                <div class="val">085257332860</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL STEP 1: TRANSACTION AMOUNT -->
+    <div class="modal-overlay" id="modal-tx">
+        <div class="modal-card">
+            <h3 id="modal-tx-title">Transaction</h3>
+            
+            <div class="options-grid" id="pemasukan-options" style="display: none;">
+                <div class="opt-btn" onclick="selectIncomeCategory('Salary', this)" id="opt-salary">Salary</div>
+                <div class="opt-btn" onclick="selectIncomeCategory('Business Profits', this)" id="opt-profits">Business Profits</div>
+                <div class="opt-btn" onclick="selectIncomeCategory('Asset Sale', this)" id="opt-asset">Asset Sale</div>
+                <div class="opt-btn" onclick="selectIncomeCategory('Gift / Grant', this)" id="opt-gift">Gift / Grant</div>
+            </div>
+
+            <input type="text" id="tx-desc-input" class="auth-input" placeholder="Transaction Description">
+            <input type="text" id="tx-display" class="auth-input" readonly placeholder="IDR 0" style="text-align: center; font-weight: 700; font-size: 16px;">
+            
+            <div class="error-msg" id="tx-error"></div>
+
+            <div class="keypad-grid" id="tx-keypad"></div>
+            <button class="key-btn" style="background:#f1f5f9; width:100%; margin-top:6px; border-color:#cbd5e1; padding:8px;" id="btn-cancel-tx" onclick="closeTxModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- MODAL STEP 2: PIN VERIFICATION -->
+    <div class="modal-overlay" id="modal-pin">
+        <div class="modal-card">
+            <h3 id="hdr-confirm-pin">Confirm Security PIN</h3>
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;" id="desc-confirm-pin">Enter 6-digit PIN to process transaction</p>
+            <input type="password" id="tx-pin-input" class="auth-input" placeholder="• • • • • •" readonly maxlength="6" style="text-align: center; letter-spacing: 4px; font-size: 18px; font-weight: 700;">
+            
+            <div class="error-msg" id="pin-error"></div>
+
+            <div class="keypad-grid" id="pin-keypad"></div>
+            <button class="key-btn" style="background:#f1f5f9; width:100%; margin-top:6px; border-color:#cbd5e1; padding:8px;" id="btn-cancel-pin" onclick="closePinModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- TRANSACTION RECEIPT MODAL -->
+    <div class="modal-overlay" id="modal-receipt">
+        <div class="modal-card receipt-card">
+            <div class="receipt-header" id="hdr-tx-receipt">Transaction Receipt</div>
+            <div class="receipt-status" id="lbl-tx-status">SUCCESS</div>
+            <div class="receipt-amount" id="receipt-amount">IDR 0</div>
+            
+            <div class="receipt-details">
+                <div class="receipt-row">
+                    <span id="lbl-rcpt-id">Transaction ID</span>
+                    <span class="val" id="receipt-id">-</span>
+                </div>
+                <div class="receipt-row">
+                    <span id="lbl-rcpt-type">Transaction Type</span>
+                    <span class="val" id="receipt-type">-</span>
+                </div>
+                <div class="receipt-row">
+                    <span id="lbl-rcpt-desc">Description</span>
+                    <span class="val" id="receipt-desc">-</span>
+                </div>
+                <div class="receipt-row">
+                    <span id="lbl-rcpt-time">Time</span>
+                    <span class="val" id="receipt-time">-</span>
+                </div>
+            </div>
+
+            <button class="key-btn submit" id="btn-close-receipt" onclick="closeReceiptModal()">Close Receipt</button>
+        </div>
+    </div>
+
+    <!-- CUSTOM POPUP ALERT MODAL -->
+    <div class="custom-popup-overlay" id="custom-popup">
+        <div class="custom-popup-card">
+            <p id="custom-popup-message">Message here</p>
+            <button class="custom-popup-btn" onclick="closeCustomAlert()">OK</button>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVBAR -->
+    <nav class="navbar">
+        <a class="nav-item active" onclick="switchTab('home')" id="nav-home">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span id="nav-lbl-home">Home</span>
+        </a>
+        <a class="nav-item" onclick="switchTab('report')" id="nav-report">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+            <span id="nav-lbl-report">Report</span>
+        </a>
+        <a class="nav-item" onclick="switchTab('profile')" id="nav-profile">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span id="nav-lbl-profile">Profile</span>
+        </a>
+    </nav>
+
+    <script>
+        let mainBalance = 0;
+        let savingsBalance = 0;
+        let isBalanceHidden = false;
+        let isProfilePinHidden = true;
+        let transactions = [];
+        let savingsTransactions = [];
+        let userData = null;
+        let currentLang = 'en';
+        let currentReportFilter = 'all';
+
+        let currentTxType = '';
+        let currentTxRawNum = '';
+        let currentTxPin = '';
+        let pendingAmount = 0;
+        let selectedCategory = '';
+
+        const translations = {
+            en: {
+                reg_title: "Register MyFIN",
+                reg_desc: "This app will be linked permanently to your device. Create a new account to get started.",
+                reg_name_placeholder: "Full Name",
+                reg_email_placeholder: "Email Address",
+                reg_pin_placeholder: "Create PIN (6 Digits)",
+                btn_register_now: "Register Now",
+                login_title: "Log In to MyFIN",
+                login_welcome_prefix: "Welcome back",
+                login_pin_placeholder: "Enter Security PIN",
+                btn_unlock_app: "Unlock App",
+                hdr_subtitle: "My Financial",
+                lbl_your_balance: "Your Balance",
+                btn_tx_history: "Transaction History",
+                hdr_main_menu: "Main Menu",
+                menu_income: "Income",
+                menu_expense: "Expense",
+                menu_savings: "Savings",
+                menu_history: "History",
+                menu_charts: "Charts",
+                menu_investment: "Investment",
+                hdr_savings_account: "Savings Account",
+                lbl_total_savings: "Total Savings Balance",
+                btn_withdraw_main: "Withdraw to Main Balance",
+                btn_add_deposit: "+ Add New Deposit",
+                hdr_savings_history: "Savings History",
+                hdr_tx_history: "Transaction History",
+                hdr_profile_settings: "Profile Settings",
+                sec_user_info: "User Account Info",
+                lbl_acc_name: "Account Name",
+                lbl_email: "Email",
+                lbl_pin: "Security PIN",
+                sec_language: "Language / Bahasa",
+                sec_dev_info: "Developer / Admin Info",
+                lbl_creator: "App Creator",
+                hdr_confirm_pin: "Confirm Security PIN",
+                desc_confirm_pin: "Enter 6-digit PIN to process transaction",
+                btn_process_tx: "Process Transaction",
+                btn_cancel: "Cancel",
+                btn_continue: "Continue",
+                hdr_tx_receipt: "Transaction Receipt",
+                lbl_tx_status: "SUCCESS",
+                lbl_rcpt_id: "Transaction ID",
+                lbl_rcpt_type: "Transaction Type",
+                lbl_rcpt_desc: "Description",
+                lbl_rcpt_time: "Time",
+                btn_close_receipt: "Close Receipt",
+                nav_home: "Home",
+                nav_report: "Report",
+                nav_profile: "Profile",
+                tx_desc_placeholder: "Transaction Description",
+                expense_desc_placeholder: "Expense Description",
+                search_placeholder: "Search transactions...",
+                chip_all: "All",
+                chip_income: "Income",
+                chip_expense: "Expense",
+                chip_saving: "Savings",
+                opt_salary: "Salary",
+                opt_profits: "Business Profits",
+                opt_asset: "Asset Sale",
+                opt_gift: "Gift / Grant",
+                err_incorrect_pin: "Incorrect PIN!",
+                err_reg_incomplete: "Please complete Name, Email & 6-digit PIN!",
+                err_invalid_amount: "Enter a valid amount!",
+                err_enter_desc: "Please enter transaction description!",
+                err_incorrect_sec_pin: "Incorrect Security PIN!",
+                err_insufficient_main: "Insufficient main balance!",
+                err_insufficient_savings: "Insufficient savings balance!",
+                no_tx_history: "No transaction history yet.",
+                no_savings_history: "No savings history yet.",
+                alert_charts: "Financial Charts feature coming soon!",
+                alert_invest: "Investment feature coming soon!",
+                deposit_savings_label: "Deposit Savings",
+                withdraw_savings_label: "Withdraw Savings",
+                quotes: [
+                    { text: "Do not save what is left after spending, but spend what is left after saving.", author: "— Warren Buffett" },
+                    { text: "Manage your money before your money manages your life.", author: "— MyFIN Motivation" },
+                    { text: "Financial discipline today is financial freedom tomorrow.", author: "— Financial Wisdom" }
+                ]
+            },
+            id: {
+                reg_title: "Pendaftaran MyFIN",
+                reg_desc: "Aplikasi ini akan terhubung secara permanen dengan perangkat Anda. Buat akun baru untuk memulai.",
+                reg_name_placeholder: "Nama Lengkap",
+                reg_email_placeholder: "Alamat Email",
+                reg_pin_placeholder: "Buat PIN (6 Angka)",
+                btn_register_now: "Daftar Sekarang",
+                login_title: "Masuk ke MyFIN",
+                login_welcome_prefix: "Selamat datang kembali",
+                login_pin_placeholder: "Masukkan PIN Keamanan",
+                btn_unlock_app: "Buka Aplikasi",
+                hdr_subtitle: "Keuanganku",
+                lbl_your_balance: "Saldo Anda",
+                btn_tx_history: "Riwayat Transaksi",
+                hdr_main_menu: "Menu Utama",
+                menu_income: "Pemasukan",
+                menu_expense: "Pengeluaran",
+                menu_savings: "Tabungan",
+                menu_history: "Riwayat",
+                menu_charts: "Grafik",
+                menu_investment: "Investasi",
+                hdr_savings_account: "Akun Tabungan",
+                lbl_total_savings: "Total Saldo Tabungan",
+                btn_withdraw_main: "Tarik ke Saldo Utama",
+                btn_add_deposit: "+ Tambah Setoran Baru",
+                hdr_savings_history: "Riwayat Tabungan",
+                hdr_tx_history: "Riwayat Transaksi",
+                hdr_profile_settings: "Pengaturan Profil",
+                sec_user_info: "Informasi Akun Pengguna",
+                lbl_acc_name: "Nama Akun",
+                lbl_email: "Email",
+                lbl_pin: "PIN Keamanan",
+                sec_language: "Bahasa / Language",
+                sec_dev_info: "Informasi Pengembang / Admin",
+                lbl_creator: "Pembuat Aplikasi",
+                hdr_confirm_pin: "Konfirmasi PIN Keamanan",
+                desc_confirm_pin: "Masukkan 6 digit PIN untuk memproses transaksi",
+                btn_process_tx: "Proses Transaksi",
+                btn_cancel: "Batal",
+                btn_continue: "Lanjutkan",
+                hdr_tx_receipt: "Struk Transaksi",
+                lbl_tx_status: "BERHASIL",
+                lbl_rcpt_id: "ID Transaksi",
+                lbl_rcpt_type: "Jenis Transaksi",
+                lbl_rcpt_desc: "Keterangan",
+                lbl_rcpt_time: "Waktu",
+                btn_close_receipt: "Tutup Struk",
+                nav_home: "Beranda",
+                nav_report: "Laporan",
+                nav_profile: "Profil",
+                tx_desc_placeholder: "Keterangan Transaksi",
+                expense_desc_placeholder: "Keterangan Pengeluaran",
+                search_placeholder: "Cari transaksi...",
+                chip_all: "Semua",
+                chip_income: "Pemasukan",
+                chip_expense: "Pengeluaran",
+                chip_saving: "Tabungan",
+                opt_salary: "Gaji Utama",
+                opt_profits: "Hasil Usaha",
+                opt_asset: "Jual Aset",
+                opt_gift: "Hadiah / Hibah",
+                err_incorrect_pin: "PIN Salah!",
+                err_reg_incomplete: "Lengkapi Nama, Email & 6 digit PIN!",
+                err_invalid_amount: "Masukkan nominal yang valid!",
+                err_enter_desc: "Harap isi keterangan transaksi!",
+                err_incorrect_sec_pin: "PIN Keamanan Salah!",
+                err_insufficient_main: "Saldo utama tidak mencukupi!",
+                err_insufficient_savings: "Saldo tabungan tidak mencukupi!",
+                no_tx_history: "Belum ada riwayat transaksi.",
+                no_savings_history: "Belum ada riwayat tabungan.",
+                alert_charts: "Fitur Grafik Keuangan akan segera hadir!",
+                alert_invest: "Fitur Investasi akan segera hadir!",
+                deposit_savings_label: "Setor Tabungan",
+                withdraw_savings_label: "Tarik Tabungan",
+                quotes: [
+                    { text: "Jangan menabung sisa pengeluaran, tetapi belanjakan sisa dari apa yang telah ditabung.", author: "— Warren Buffett" },
+                    { text: "Kelola uangmu sebelum uangmu yang mengendalikan hidupmu.", author: "— Motivasi MyFIN" },
+                    { text: "Kedisiplinan keuangan hari ini adalah kebebasan finansial di masa depan.", author: "— Bijak Finansial" }
+                ]
+            }
+        };
+
+        let currentQuoteIndex = 0;
+
+        function t(key) {
+            return translations[currentLang][key] || key;
+        }
+
+        window.onload = function() {
+            let savedLang = localStorage.getItem('myfin_lang');
+            if (savedLang) currentLang = savedLang;
+
+            let savedUser = localStorage.getItem('myfin_user');
+            
+            if (!savedUser) {
+                document.getElementById('form-register').style.display = 'block';
+                document.getElementById('form-login').style.display = 'none';
+                buildKeypad('reg-keypad', handleRegKeypad, t('btn_register_now'));
+            } else {
+                userData = JSON.parse(savedUser);
+                
+                let savedData = localStorage.getItem('myfin_data');
+                if (savedData) {
+                    let parsedData = JSON.parse(savedData);
+                    mainBalance = parsedData.mainBalance || 0;
+                    savingsBalance = parsedData.savingsBalance || 0;
+                    transactions = parsedData.transactions || [];
+                    savingsTransactions = parsedData.savingsTransactions || [];
+                }
+
+                document.getElementById('form-register').style.display = 'none';
+                document.getElementById('form-login').style.display = 'block';
+                buildKeypad('login-keypad', handleLoginKeypad, t('btn_unlock_app'));
+            }
+
+            applyLanguageUI();
+            showQuote(0);
+            startAutoQuote();
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('myfin_lang', lang);
+            applyLanguageUI();
+            renderTransactions();
+            showQuote(currentQuoteIndex);
+        }
+
+        function applyLanguageUI() {
+            document.getElementById('lang-btn-en').classList.toggle('active', currentLang === 'en');
+            document.getElementById('lang-btn-id').classList.toggle('active', currentLang === 'id');
+
+            document.getElementById('reg-title').innerText = t('reg_title');
+            document.getElementById('reg-desc').innerText = t('reg_desc');
+            document.getElementById('reg-name').placeholder = t('reg_name_placeholder');
+            document.getElementById('reg-email').placeholder = t('reg_email_placeholder');
+            document.getElementById('reg-pin').placeholder = t('reg_pin_placeholder');
+
+            document.getElementById('login-title').innerText = t('login_title');
+            if (userData) {
+                document.getElementById('login-welcome').innerText = `${t('login_welcome_prefix')}, ${userData.name}!`;
+            }
+            document.getElementById('login-pin').placeholder = t('login_pin_placeholder');
+
+            document.getElementById('header-subtitle').innerText = t('hdr_subtitle');
+            document.getElementById('lbl-your-balance').innerText = t('lbl_your_balance');
+            document.getElementById('btn-tx-history').innerText = t('btn_tx_history');
+
+            document.getElementById('hdr-main-menu').innerText = t('hdr_main_menu');
+            document.getElementById('menu-income').innerText = t('menu_income');
+            document.getElementById('menu-expense').innerText = t('menu_expense');
+            document.getElementById('menu-savings').innerText = t('menu_savings');
+            document.getElementById('menu-history').innerText = t('menu_history');
+            document.getElementById('menu-charts').innerText = t('menu_charts');
+            document.getElementById('menu-investment').innerText = t('menu_investment');
+
+            document.getElementById('hdr-savings-account').innerText = t('hdr_savings_account');
+            document.getElementById('lbl-total-savings').innerText = t('lbl_total_savings');
+            document.getElementById('btn-withdraw-main').innerText = t('btn_withdraw_main');
+            document.getElementById('btn-add-deposit').innerText = t('btn_add_deposit');
+            document.getElementById('hdr-savings-history').innerText = t('hdr_savings_history');
+
+            document.getElementById('hdr-tx-history').innerText = t('hdr_tx_history');
+            document.getElementById('report-search').placeholder = t('search_placeholder');
+            document.getElementById('chip-all').innerText = t('chip_all');
+            document.getElementById('chip-income').innerText = t('chip_income');
+            document.getElementById('chip-expense').innerText = t('chip_expense');
+            document.getElementById('chip-saving').innerText = t('chip_saving');
+
+            document.getElementById('hdr-profile-settings').innerText = t('hdr_profile_settings');
+            document.getElementById('sec-user-info').innerText = t('sec_user_info');
+            document.getElementById('lbl-acc-name').innerText = t('lbl_acc_name');
+            document.getElementById('lbl-email').innerText = t('lbl_email');
+            document.getElementById('lbl-pin').innerText = t('lbl_pin');
+            document.getElementById('sec-language').innerText = t('sec_language');
+            document.getElementById('sec-dev-info').innerText = t('sec_dev_info');
+            document.getElementById('lbl-creator').innerText = t('lbl_creator');
+
+            document.getElementById('opt-salary').innerText = t('opt_salary');
+            document.getElementById('opt-profits').innerText = t('opt_profits');
+            document.getElementById('opt-asset').innerText = t('opt_asset');
+            document.getElementById('opt-gift').innerText = t('opt_gift');
+
+            document.getElementById('btn-cancel-tx').innerText = t('btn_cancel');
+            document.getElementById('hdr-confirm-pin').innerText = t('hdr_confirm_pin');
+            document.getElementById('desc-confirm-pin').innerText = t('desc_confirm_pin');
+            document.getElementById('btn-cancel-pin').innerText = t('btn_cancel');
+
+            document.getElementById('hdr-tx-receipt').innerText = t('hdr_tx_receipt');
+            document.getElementById('lbl-tx-status').innerText = t('lbl_tx_status');
+            document.getElementById('lbl-rcpt-id').innerText = t('lbl_rcpt_id');
+            document.getElementById('lbl-rcpt-type').innerText = t('lbl_rcpt_type');
+            document.getElementById('lbl-rcpt-desc').innerText = t('lbl_rcpt_desc');
+            document.getElementById('lbl-rcpt-time').innerText = t('lbl_rcpt_time');
+            document.getElementById('btn-close-receipt').innerText = t('btn_close_receipt');
+
+            document.getElementById('nav-lbl-home').innerText = t('nav_home');
+            document.getElementById('nav-lbl-report').innerText = t('nav_report');
+            document.getElementById('nav-lbl-profile').innerText = t('nav_profile');
+
+            if (document.getElementById('form-register').style.display !== 'none') {
+                buildKeypad('reg-keypad', handleRegKeypad, t('btn_register_now'));
+            }
+            if (document.getElementById('form-login').style.display !== 'none') {
+                buildKeypad('login-keypad', handleLoginKeypad, t('btn_unlock_app'));
+            }
+        }
+
+        function saveAppFinancialData() {
+            const appData = {
+                mainBalance: mainBalance,
+                savingsBalance: savingsBalance,
+                transactions: transactions,
+                savingsTransactions: savingsTransactions
+            };
+            localStorage.setItem('myfin_data', JSON.stringify(appData));
+        }
+
+        function showCustomAlert(message) {
+            document.getElementById('custom-popup-message').innerText = message;
+            document.getElementById('custom-popup').classList.add('active');
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('custom-popup').classList.remove('active');
+        }
+
+        function showQuote(index) {
+            const cardEl = document.getElementById('quote-card');
+            const textEl = document.getElementById('quote-text');
+            const authorEl = document.getElementById('quote-author');
+            const list = translations[currentLang].quotes;
+            
+            cardEl.classList.add('fade-out');
+            setTimeout(() => {
+                textEl.innerText = list[index].text;
+                authorEl.innerText = list[index].author;
+                cardEl.classList.remove('fade-out');
+            }, 300);
+        }
+
+        function startAutoQuote() {
+            setInterval(() => {
+                currentQuoteIndex = (currentQuoteIndex + 1) % translations[currentLang].quotes.length;
+                showQuote(currentQuoteIndex);
+            }, 4000);
+        }
+
+        function buildKeypad(containerId, handler, btnLabel) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            const keys = ['1','2','3','4','5','6','7','8','9','C','0','⌫'];
+            
+            keys.forEach(k => {
+                let btn = document.createElement('button');
+                btn.className = 'key-btn' + (k === '⌫' ? ' del' : '');
+                btn.innerText = k;
+                btn.onclick = () => handler(k);
+                container.appendChild(btn);
+            });
+
+            let submitBtn = document.createElement('button');
+            submitBtn.className = 'key-btn submit';
+            submitBtn.innerText = btnLabel || t('btn_continue');
+            submitBtn.onclick = () => handler('SUBMIT');
+            container.appendChild(submitBtn);
+        }
+
+        function handleLoginKeypad(key) {
+            let input = document.getElementById('login-pin');
+            let err = document.getElementById('login-error');
+            err.style.display = 'none';
+
+            if (key === 'C') input.value = '';
+            else if (key === '⌫') input.value = input.value.slice(0, -1);
+            else if (key === 'SUBMIT') {
+                if (input.value === userData.pin) {
+                    loginSuccess();
+                } else {
+                    err.innerText = t('err_incorrect_pin');
+                    err.style.display = 'block';
+                }
+            } else {
+                if (input.value.length < 6) input.value += key;
+            }
+        }
+
+        function handleRegKeypad(key) {
+            let name = document.getElementById('reg-name').value.trim();
+            let email = document.getElementById('reg-email').value.trim();
+            let pinInput = document.getElementById('reg-pin');
+            let err = document.getElementById('reg-error');
+            err.style.display = 'none';
+
+            if (key === 'C') pinInput.value = '';
+            else if (key === '⌫') pinInput.value = pinInput.value.slice(0, -1);
+            else if (key === 'SUBMIT') {
+                if (!name || !email || pinInput.value.length < 6) {
+                    err.innerText = t('err_reg_incomplete');
+                    err.style.display = 'block';
+                    return;
+                }
+                userData = { name, email, pin: pinInput.value };
+                localStorage.setItem('myfin_user', JSON.stringify(userData));
+                
+                saveAppFinancialData();
+                loginSuccess();
+            } else {
+                if (pinInput.value.length < 6) pinInput.value += key;
+            }
+        }
+
+        function loginSuccess() {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('header-name').innerText = `Hi, ${userData.name}`;
+            let initials = userData.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+            document.getElementById('header-avatar').innerText = initials || 'US';
+            document.getElementById('profile-name').innerText = userData.name;
+            document.getElementById('profile-email').innerText = userData.email;
+            updateProfilePinUI();
+
+            updateBalanceUI();
+            renderTransactions();
+        }
+
+        function toggleHideSaldo() {
+            isBalanceHidden = !isBalanceHidden;
+            let eyeBtn = document.getElementById('toggle-eye-btn');
+
+            if (isBalanceHidden) {
+                eyeBtn.classList.add('is-hidden');
+            } else {
+                eyeBtn.classList.remove('is-hidden');
+            }
+            updateBalanceUI();
+        }
+
+        function toggleProfilePin() {
+            isProfilePinHidden = !isProfilePinHidden;
+            let eyeBtn = document.getElementById('toggle-profile-pin-btn');
+
+            if (isProfilePinHidden) {
+                eyeBtn.classList.add('is-hidden');
+            } else {
+                eyeBtn.classList.remove('is-hidden');
+            }
+            updateProfilePinUI();
+        }
+
+        function updateProfilePinUI() {
+            let pinDisplayEl = document.getElementById('profile-pin-display');
+            if (userData) {
+                pinDisplayEl.innerText = isProfilePinHidden ? '••••••' : userData.pin;
+            }
+        }
+
+        function selectIncomeCategory(categoryKey, btnEl) {
+            selectedCategory = categoryKey;
+            document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+            btnEl.classList.add('selected');
+            document.getElementById('tx-desc-input').value = t('opt_' + categoryKey.toLowerCase().replace(/ \/ /g, '').replace(/ /g, ''));
+        }
+
+        function openTxModal(type) {
+            currentTxType = type;
+            currentTxRawNum = '';
+            selectedCategory = '';
+
+            let translatedType = type;
+            if (type === 'Income') translatedType = t('menu_income');
+            else if (type === 'Expense') translatedType = t('menu_expense');
+            else if (type === 'Deposit Savings') translatedType = t('deposit_savings_label');
+            else if (type === 'Withdraw Savings') translatedType = t('withdraw_savings_label');
+
+            document.getElementById('modal-tx-title').innerText = `${t('hdr_main_menu')}: ${translatedType}`;
+            document.getElementById('tx-display').value = '';
+            document.getElementById('tx-error').style.display = 'none';
+            
+            let descInput = document.getElementById('tx-desc-input');
+            let incomeOptions = document.getElementById('pemasukan-options');
+
+            descInput.style.display = 'block';
+            descInput.value = '';
+
+            if (type === 'Income') {
+                incomeOptions.style.display = 'grid';
+                document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+                descInput.placeholder = t('tx_desc_placeholder');
+            } else {
+                incomeOptions.style.display = 'none';
+                if (type === 'Expense') {
+                    descInput.placeholder = t('expense_desc_placeholder');
+                } else {
+                    descInput.value = translatedType;
+                    descInput.style.display = 'none';
+                }
+            }
+
+            buildKeypad('tx-keypad', handleTxKeypad, t('btn_continue'));
+            document.getElementById('modal-tx').classList.add('active');
+        }
+
+        function closeTxModal() {
+            document.getElementById('modal-tx').classList.remove('active');
+        }
+
+        function handleTxKeypad(key) {
+            let display = document.getElementById('tx-display');
+            let err = document.getElementById('tx-error');
+            let descInput = document.getElementById('tx-desc-input');
+            err.style.display = 'none';
+
+            if (key === 'C') {
+                currentTxRawNum = '';
+            } else if (key === '⌫') {
+                currentTxRawNum = currentTxRawNum.slice(0, -1);
+            } else if (key === 'SUBMIT') {
+                let amount = parseInt(currentTxRawNum);
+                if (isNaN(amount) || amount <= 0) {
+                    err.innerText = t('err_invalid_amount');
+                    err.style.display = 'block';
+                    return;
+                }
+                if (currentTxType !== 'Deposit Savings' && currentTxType !== 'Withdraw Savings' && !descInput.value.trim()) {
+                    err.innerText = t('err_enter_desc');
+                    err.style.display = 'block';
+                    return;
+                }
+
+                pendingAmount = amount;
+                closeTxModal();
+                openPinModal();
+                return;
+            } else {
+                currentTxRawNum += key;
+            }
+
+            display.value = currentTxRawNum ? formatIDR(parseInt(currentTxRawNum)) : '';
+        }
+
+        function openPinModal() {
+            currentTxPin = '';
+            document.getElementById('tx-pin-input').value = '';
+            document.getElementById('pin-error').style.display = 'none';
+            buildKeypad('pin-keypad', handlePinKeypad, t('btn_process_tx'));
+            document.getElementById('modal-pin').classList.add('active');
+        }
+
+        function closePinModal() {
+            document.getElementById('modal-pin').classList.remove('active');
+        }
+
+        function handlePinKeypad(key) {
+            let pinDisplay = document.getElementById('tx-pin-input');
+            let err = document.getElementById('pin-error');
+            err.style.display = 'none';
+
+            if (key === 'C') {
+                currentTxPin = '';
+            } else if (key === '⌫') {
+                currentTxPin = currentTxPin.slice(0, -1);
+            } else if (key === 'SUBMIT') {
+                if (currentTxPin !== userData.pin) {
+                    err.innerText = t('err_incorrect_sec_pin');
+                    err.style.display = 'block';
+                    return;
+                }
+
+                executeTransaction(pendingAmount);
+                closePinModal();
+            } else {
+                if (currentTxPin.length < 6) currentTxPin += key;
+            }
+
+            pinDisplay.value = '•'.repeat(currentTxPin.length);
+        }
+
+        function executeTransaction(amount) {
+            let descInputVal = document.getElementById('tx-desc-input').value.trim();
+            let desc = descInputVal || currentTxType;
+            let time = getCurrentDateTime();
+            let txId = 'FIN-' + Math.floor(100000 + Math.random() * 900000);
+
+            let typeLabel = currentTxType;
+            if (currentTxType === 'Income') typeLabel = t('menu_income');
+            else if (currentTxType === 'Expense') typeLabel = t('menu_expense');
+            else if (currentTxType === 'Deposit Savings') typeLabel = t('deposit_savings_label');
+            else if (currentTxType === 'Withdraw Savings') typeLabel = t('withdraw_savings_label');
+
+            let newTx = { id: txId, typeLabel: typeLabel, originalType: currentTxType, title: desc, amount: amount, dateTime: time };
+
+            if (currentTxType === 'Income') {
+                mainBalance += amount;
+                newTx.type = 'income';
+                transactions.unshift(newTx);
+            } else if (currentTxType === 'Expense') {
+                if (amount > mainBalance) {
+                    showCustomAlert(t('err_insufficient_main'));
+                    return;
+                }
+                mainBalance -= amount;
+                newTx.type = 'expense';
+                transactions.unshift(newTx);
+            } else if (currentTxType === 'Deposit Savings') {
+                if (amount > mainBalance) {
+                    showCustomAlert(t('err_insufficient_main'));
+                    return;
+                }
+                mainBalance -= amount;
+                savingsBalance += amount;
+                newTx.type = 'saving';
+                newTx.title = t('deposit_savings_label');
+                transactions.unshift(newTx);
+
+                savingsTransactions.unshift({ id: txId, typeLabel: t('deposit_savings_label'), originalType: currentTxType, type: 'saving', title: t('deposit_savings_label'), amount: amount, dateTime: time });
+            } else if (currentTxType === 'Withdraw Savings') {
+                if (amount > savingsBalance) {
+                    showCustomAlert(t('err_insufficient_savings'));
+                    return;
+                }
+                savingsBalance -= amount;
+                mainBalance += amount;
+                newTx.type = 'income';
+                newTx.title = t('withdraw_savings_label');
+                transactions.unshift(newTx);
+
+                savingsTransactions.unshift({ id: txId, typeLabel: t('withdraw_savings_label'), originalType: currentTxType, type: 'income', title: t('withdraw_savings_label'), amount: amount, dateTime: time });
+            }
+
+            saveAppFinancialData();
+
+            updateBalanceUI();
+            renderTransactions();
+            showReceipt(newTx);
+        }
+
+        function showReceipt(tx) {
+            document.getElementById('receipt-id').innerText = tx.id;
+            document.getElementById('receipt-type').innerText = tx.typeLabel;
+            document.getElementById('receipt-desc').innerText = tx.title;
+            document.getElementById('receipt-amount').innerText = formatIDR(tx.amount) + '.00';
+            document.getElementById('receipt-time').innerText = tx.dateTime;
+
+            document.getElementById('modal-receipt').classList.add('active');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('modal-receipt').classList.remove('active');
+        }
+
+        function updateBalanceUI() {
+            let mainBalEl = document.getElementById('main-balance');
+            let savBalEl = document.getElementById('savings-balance');
+
+            if (isBalanceHidden) {
+                mainBalEl.innerText = 'IDR ••••••';
+                savBalEl.innerText = 'IDR ••••••';
+            } else {
+                mainBalEl.innerText = formatIDR(mainBalance) + '.00';
+                savBalEl.innerText = formatIDR(savingsBalance) + '.00';
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            let balanceCard = document.getElementById('main-balance-card');
+
+            if (tab === 'home') {
+                document.getElementById('view-home').classList.add('active');
+                document.getElementById('nav-home').classList.add('active');
+                balanceCard.style.display = 'block';
+            } else if (tab === 'savings') {
+                document.getElementById('view-savings').classList.add('active');
+                balanceCard.style.display = 'none';
+                renderTransactions();
+            } else if (tab === 'report') {
+                document.getElementById('view-report').classList.add('active');
+                document.getElementById('nav-report').classList.add('active');
+                balanceCard.style.display = 'none';
+                renderTransactions();
+            } else if (tab === 'profile') {
+                document.getElementById('view-profile').classList.add('active');
+                document.getElementById('nav-profile').classList.add('active');
+                balanceCard.style.display = 'none';
+            }
+        }
+
+        function setReportFilter(filterType, chipEl) {
+            currentReportFilter = filterType;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chipEl.classList.add('active');
+            renderTransactions();
+        }
+
+        function renderTransactions() {
+            let searchKeyword = document.getElementById('report-search').value.toLowerCase();
+            let listContainer = document.getElementById('transaction-list');
+            
+            let filteredTransactions = transactions.filter(tx => {
+                let matchesFilter = (currentReportFilter === 'all') || (tx.type === currentReportFilter);
+                let matchesSearch = tx.title.toLowerCase().includes(searchKeyword) || tx.dateTime.toLowerCase().includes(searchKeyword);
+                return matchesFilter && matchesSearch;
+            });
+
+            listContainer.innerHTML = filteredTransactions.length === 0 ? `<p style="font-size:12px; text-align:center; color:#94a3b8; padding: 20px 0;">${t('no_tx_history')}</p>` : '';
+            
+            filteredTransactions.forEach((tx) => {
+                let sign = tx.type === 'income' ? '+ ' : (tx.type === 'expense' ? '- ' : '+ ');
+                let item = document.createElement('div');
+                item.className = 'transaction-item';
+                item.onclick = () => showReceipt(tx);
+                item.innerHTML = `
+                    <div><div class="desc">${tx.title}</div><div class="date-time">${tx.dateTime}</div></div>
+                    <div class="amount ${tx.type}">${sign}${formatIDR(tx.amount)}.00</div>`;
+                listContainer.appendChild(item);
+            });
+
+            let savingsList = document.getElementById('savings-list');
+            savingsList.innerHTML = savingsTransactions.length === 0 ? `<p style="font-size:12px; text-align:center; color:#94a3b8; padding: 20px 0;">${t('no_savings_history')}</p>` : '';
+            
+            savingsTransactions.forEach((tx) => {
+                let item = document.createElement('div');
+                item.className = 'transaction-item';
+                item.onclick = () => showReceipt(tx);
+                item.innerHTML = `
+                    <div><div class="desc">${tx.title}</div><div class="date-time">${tx.dateTime}</div></div>
+                    <div class="amount saving">+ ${formatIDR(tx.amount)}.00</div>`;
+                savingsList.appendChild(item);
+            });
+        }
+
+        function getCurrentDateTime() {
+            const now = new Date();
+            return `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}, ${now.getHours()}:${now.getMinutes()}`;
+        }
+
+        function formatIDR(angka) {
+            return 'IDR ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+    </script>
+</body>
+</html>
