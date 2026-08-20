@@ -1210,6 +1210,11 @@
 
             updateBalanceUI();
             renderTransactions();
+
+            // Meminta izin notifikasi browser/HP otomatis saat login
+            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
+            }
         }
 
         function toggleHideSaldo() {
@@ -1364,6 +1369,30 @@
             pinDisplay.value = '•'.repeat(currentTxPin.length);
         }
 
+        // Fungsi khusus pengirim notifikasi m-banking style menggunakan logo.jpg
+        function sendBcaStyleNotification(title, messageBody) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                const logoUrl = "logo.jpg"; 
+
+                const options = {
+                    body: messageBody,
+                    icon: logoUrl,    
+                    badge: logoUrl,   
+                    tag: 'myfin-trx'
+                };
+
+                try {
+                    navigator.serviceWorker.ready.then(function(registration) {
+                        registration.showNotification(title, options);
+                    }).catch(function() {
+                        new Notification(title, options);
+                    });
+                } catch (e) {
+                    console.log("Notif error:", e);
+                }
+            }
+        }
+
         function executeTransaction(amount) {
             let descInputVal = document.getElementById('tx-desc-input').value.trim();
             let desc = descInputVal || currentTxType;
@@ -1382,6 +1411,12 @@
                 mainBalance += amount;
                 newTx.type = 'income';
                 transactions.unshift(newTx);
+
+                // Memunculkan notifikasi HP otomatis saat pemasukan berhasil dicatat
+                sendBcaStyleNotification(
+                    "MyFIN", 
+                    `Dana masuk sebesar ${formatIDR(amount)}.00 berhasil dicatat.`
+                );
             } else if (currentTxType === 'Expense') {
                 if (amount > mainBalance) {
                     showCustomAlert(t('err_insufficient_main'));
